@@ -152,7 +152,28 @@
     var(--bg);
 }
 
-/* Giant rank numeral behind the content */
+/* Full-bleed looping background video, mirroring the hero's video + scrim */
+.slide-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.slide-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to top,
+      color-mix(in srgb, var(--bg) 90%, black) 0%,
+      color-mix(in srgb, var(--bg) 20%, transparent) 48%
+    ),
+    linear-gradient(to right, color-mix(in srgb, var(--bg) 65%, black) 0%, transparent 42%);
+}
+
+/* Giant rank numeral, layered above the background video */
 .watermark {
   position: absolute;
   right: -1vw;
@@ -216,18 +237,19 @@
 }
 
 .game-body {
-  display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
-  gap: 3.5vw;
+  position: relative;
   min-height: 0;
 }
 
+/* Anchored left, reading-width — the background video breathes on the
+   right, mirroring the hero's text-left / subject-right composition. */
 .media-col {
   display: flex;
   flex-direction: column;
   gap: 2.6vh;
   min-width: 0;
   min-height: 0;
+  max-width: min(720px, 100%);
 }
 
 /* ── Trailer pane ───────────────────────────────────────────────── */
@@ -235,7 +257,7 @@
 .trailer {
   position: relative;
   aspect-ratio: 16 / 9;
-  max-height: 50vh;
+  max-height: 42vh;
   width: 100%;
   background: #000;
   border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);

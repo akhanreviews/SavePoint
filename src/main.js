@@ -31,6 +31,50 @@ const applyTheme = (node, theme) => {
 const prefersReducedMotion = () =>
   window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
+const skipVideoBg = prefersReducedMotion() || Boolean(navigator.connection?.saveData);
+
+/**
+ * Full-bleed looping background video for a game slide. Lazy: the
+ * activate/preload/deactivate trio (wired from onActive below) means only
+ * the active slide and its immediate neighbors ever touch the network.
+ */
+function buildBackgroundVideo(src) {
+  if (!src || skipVideoBg) return { el: null, activate() {}, preload() {}, deactivate() {} };
+
+  const video = document.createElement('video');
+  video.className = 'slide-video';
+  video.muted = true;
+  video.loop = true;
+  video.playsInline = true;
+  video.preload = 'none';
+  video.setAttribute('aria-hidden', 'true');
+
+  let attached = false;
+  const attach = () => {
+    if (attached) return;
+    attached = true;
+    video.src = src;
+  };
+
+  return {
+    el: video,
+    activate() {
+      attach();
+      video.play().catch(() => {});
+    },
+    preload() {
+      if (!attached) {
+        video.preload = 'metadata';
+        attach();
+      }
+      video.pause();
+    },
+    deactivate() {
+      if (attached) video.pause();
+    },
+  };
+}
+
 /* ── Hero slide ─────────────────────────────────────────────────── */
 
 function buildHeroSlide() {
@@ -107,9 +151,10 @@ function buildGameSlide(game) {
   slide.id = `game-${game.slug}`;
   applyTheme(slide, game.theme);
 
+  const bg = buildBackgroundVideo(game.background);
+
   const rank = String(game.rank).padStart(2, '0');
   const watermark = el('span', 'watermark', rank);
-  slide.appendChild(watermark);
   const rankTicker = createRankTicker(watermark);
 
   const head = el('header', 'game-head reveal');
@@ -129,17 +174,19 @@ function buildGameSlide(game) {
   const model = createModelPane(game);
 
   const body = el('div', 'game-body');
-  body.append(media, model.el);
+  body.append(media);
 
   const inner = el('div', 'slide-inner');
   inner.append(head, body);
-  slide.append(inner, el('div', 'slide-dim'));
+
+  if (bg.el) slide.append(bg.el, el('div', 'slide-scrim'));
+  slide.append(watermark, inner, el('div', 'slide-dim'));
 
   slide.querySelectorAll('.reveal').forEach((node, i) => {
     node.style.setProperty('--d', `${0.15 + i * 0.09}s`);
   });
 
-  return { el: slide, trailer, model, rank: rankTicker };
+  return { el: slide, trailer, model, rank: rankTicker, bg };
 }
 
 /* ── Outro slide ────────────────────────────────────────────────── */
@@ -209,6 +256,7 @@ slideCtrls.forEach((c) => stage.appendChild(c.el));
 
 let scrollCtrl = null;
 let heroRevealed = false;
+let currentIndex = 0;
 
 const rail = createRail(
   railEl,
@@ -230,6 +278,7 @@ scrollCtrl = initStageScroll(
   {
     onProgress: (p) => rail.update(p),
     onActive: (index) => {
+      currentIndex = index;
       rail.setActive(index);
       const accent = themes[index]?.primary ?? 'var(--gold)';
       railEl.style.setProperty('--rail-accent', accent);
@@ -242,10 +291,17 @@ scrollCtrl = initStageScroll(
           ctrl.model?.activate();
           ctrl.rank?.play();
           ctrl.dust?.activate();
+          ctrl.bg?.activate();
+        } else if (i === index - 1 || i === index + 1) {
+          ctrl.trailer?.deactivate();
+          ctrl.rank?.reset();
+          ctrl.dust?.deactivate();
+          ctrl.bg?.preload();
         } else {
           ctrl.trailer?.deactivate();
           ctrl.rank?.reset();
           ctrl.dust?.deactivate();
+          ctrl.bg?.deactivate();
         }
       });
     },
@@ -255,11 +311,23 @@ scrollCtrl = initStageScroll(
 // Fonts shift node positions once loaded; re-measure the rail.
 document.fonts?.ready.then(() => rail.measure());
 
+// Bandwidth/battery: stop every background video (and the hero loop) while
+// the tab isn't visible; resume only whichever slide is actually active.
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    slideCtrls.forEach((ctrl) => ctrl.bg?.deactivate());
+    slideCtrls[0].video?.pause();
+  } else {
+    slideCtrls[currentIndex]?.bg?.activate();
+    if (currentIndex === 0) slideCtrls[0].video?.play().catch(() => {});
+  }
+});
+
 document.addEventListener(
   'savepoint:booted',
   () => {
     heroRevealed = true;
-    slideCtrls[0].el.classList.add('is-active');
+    if (currentIndex === 0) slideCtrls[0].el.classList.add('is-active');
     slideCtrls[0].playIntro?.();
   },
   { once: true }

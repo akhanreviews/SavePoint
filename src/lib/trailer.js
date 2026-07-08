@@ -40,6 +40,7 @@ export function createTrailerPane(game, trailers) {
   let mounted = false;
   let video = null;
   let facade = null;
+  let hls = null;
 
   function mountVideo(attach) {
     video = document.createElement('video');
@@ -52,6 +53,18 @@ export function createTrailerPane(game, trailers) {
     wrap.appendChild(video);
   }
 
+  function unmountVideo() {
+    if (!video) return;
+    hls?.destroy();
+    hls = null;
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
+    video.remove();
+    video = null;
+    mounted = false;
+  }
+
   function mount() {
     if (source.kind === 'local') {
       mountVideo((v) => (v.src = source.src));
@@ -62,8 +75,8 @@ export function createTrailerPane(game, trailers) {
         } else {
           // hls.js is heavy; load it only when a Steam trailer first plays
           import('hls.js').then(({ default: Hls }) => {
-            if (!Hls.isSupported()) return;
-            const hls = new Hls({ maxBufferLength: 20 });
+            if (!video || video !== v || !Hls.isSupported()) return;
+            hls = new Hls({ maxBufferLength: 20 });
             hls.loadSource(source.hls);
             hls.attachMedia(v);
             v.play().catch(() => {});
@@ -104,6 +117,9 @@ export function createTrailerPane(game, trailers) {
     },
     deactivate() {
       video?.pause();
+      if (source?.kind === 'local' || source?.kind === 'steam') {
+        unmountVideo();
+      }
       // Tear the YouTube iframe down so audio stops; the facade returns.
       const iframe = wrap.querySelector('iframe');
       if (iframe) {

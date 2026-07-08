@@ -50,27 +50,39 @@ function buildBackgroundVideo(src) {
   video.setAttribute('aria-hidden', 'true');
 
   let attached = false;
-  const attach = () => {
+  const attach = (preload = 'auto') => {
+    video.preload = preload;
     if (attached) return;
     attached = true;
     video.src = src;
+    video.load();
+  };
+
+  const unload = () => {
+    if (!attached) return;
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
+    video.preload = 'none';
+    attached = false;
   };
 
   return {
     el: video,
     activate() {
-      attach();
+      attach('auto');
       video.play().catch(() => {});
     },
     preload() {
       if (!attached) {
+        attach('metadata');
+      } else {
         video.preload = 'metadata';
-        attach();
       }
       video.pause();
     },
     deactivate() {
-      if (attached) video.pause();
+      unload();
     },
   };
 }

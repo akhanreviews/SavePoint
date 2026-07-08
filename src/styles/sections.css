@@ -276,7 +276,6 @@
   border-width: 0;
   opacity: 0;
   transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
-  animation: corner-breathe 4.4s ease-in-out infinite;
 }
 
 .tf-tl { top: -5px; left: -5px; border-width: 2px 0 0 2px; transform: translate(-8px, -8px); }
@@ -287,6 +286,7 @@
 .slide.is-active .tf-corner {
   opacity: 1;
   transform: translate(0, 0);
+  animation: corner-breathe 4.4s ease-in-out infinite;
 }
 
 .slide.is-active .tf-tl { transition-delay: 0.1s; }
@@ -308,6 +308,9 @@
   border-radius: 50%;
   background: var(--primary);
   vertical-align: middle;
+}
+
+.slide.is-active .trailer-rec {
   animation: rec-pulse 1.8s ease-in-out infinite;
 }
 

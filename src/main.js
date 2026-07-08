@@ -9,6 +9,8 @@ import { initStageScroll } from './lib/transitions.js';
 import { createRail } from './lib/timeline.js';
 import { createTrailerPane } from './lib/trailer.js';
 import { createRankTicker } from './lib/rankTicker.js';
+import { createRankFx } from './lib/rankFx.js';
+import { createAudioDirector } from './lib/audioDirector.js';
 import { createHeroDust } from './lib/dust.js';
 import { initBoot } from './lib/boot.js';
 import { initCursor } from './lib/cursor.js';
@@ -125,8 +127,10 @@ function buildHeroSlide() {
   );
 
   const dust = createHeroDust();
+  const soundButton = buildSoundButton(hero);
+  soundButton.classList.add('sound-toggle--hero');
 
-  slide.append(video, el('div', 'hero-scrim'), dust.el, content, el('div', 'slide-dim'));
+  slide.append(video, el('div', 'hero-scrim'), dust.el, content, soundButton, el('div', 'slide-dim'));
 
   function playIntro() {
     const letters = mask.querySelectorAll('.ht-letter');
@@ -158,7 +162,62 @@ function buildFact(label, fact) {
   return item;
 }
 
-function buildGameSlide(game) {
+function buildSoundButton(game) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'sound-toggle';
+  button.style.setProperty('--sound-color', game.theme.primary);
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('aria-hidden', 'true');
+
+  const speaker = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  speaker.setAttribute('d', 'M4 9v6h4l5 4V5L8 9H4Z');
+
+  const wave = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  wave.classList.add('sound-wave');
+  wave.setAttribute('d', 'M16 8.2a5 5 0 0 1 0 7.6M18.6 5.7a8.4 8.4 0 0 1 0 12.6');
+
+  const slash = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  slash.classList.add('sound-slash');
+  slash.setAttribute('d', 'M4 4l16 16');
+  svg.append(speaker, wave, slash);
+  const label = el('span', 'sound-toggle-label');
+  button.append(svg, label);
+
+  audioDirector.subscribe(({ muted, unlocked }) => {
+    button.classList.toggle('needs-unlock', !unlocked);
+    button.classList.toggle('is-muted', muted);
+    const action = !unlocked ? 'Enable soundtrack' : muted ? 'Unmute soundtrack' : 'Mute soundtrack';
+    button.setAttribute('aria-pressed', String(unlocked && muted));
+    button.setAttribute('aria-label', action);
+    button.title = action;
+    label.textContent = !unlocked ? 'Enable soundtrack' : '';
+  });
+
+  let unlockIntent = false;
+  button.addEventListener('pointerdown', () => {
+    unlockIntent = !audioDirector.isUnlocked();
+  });
+  button.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      unlockIntent = !audioDirector.isUnlocked();
+    }
+  });
+  button.addEventListener('click', () => {
+    if (unlockIntent || !audioDirector.isUnlocked()) {
+      unlockIntent = false;
+      audioDirector.notePlaybackGesture();
+      return;
+    }
+    audioDirector.toggleMuted();
+  });
+
+  return button;
+}
+
+function buildGameSlide(game, gameIndex) {
   const slide = el('section', 'slide game');
   slide.id = `game-${game.slug}`;
   applyTheme(slide, game.theme);
@@ -167,7 +226,8 @@ function buildGameSlide(game) {
 
   const rank = String(game.rank).padStart(2, '0');
   const watermark = el('span', 'watermark', rank);
-  const rankTicker = createRankTicker(watermark);
+  const rankTicker = prefersReducedMotion() ? createRankTicker(watermark) : null;
+  const rankFx = createRankFx(slide, watermark, gameIndex + 1);
 
   const head = el('header', 'game-head reveal');
   head.append(
@@ -176,7 +236,12 @@ function buildGameSlide(game) {
     el('span', 'game-year', game.subtitle ? `${game.subtitle} · ${game.year}` : String(game.year))
   );
 
-  const trailer = createTrailerPane(game, trailers);
+  const trailer = createTrailerPane(game, trailers, {
+    onAudioStateChange({ audible, control }) {
+      if (audible) audioDirector.duck(control);
+      else audioDirector.unduck();
+    },
+  });
   const facts = el('dl', 'facts reveal');
   facts.append(buildFact('Favorite character', game.character), buildFact('Favorite mission', game.mission));
 
@@ -197,15 +262,16 @@ function buildGameSlide(game) {
 
   const inner = el('div', 'slide-inner');
   inner.append(head, body);
+  const soundButton = buildSoundButton(game);
 
   if (bg.el) slide.append(bg.el, el('div', 'slide-scrim'));
-  slide.append(watermark, inner, el('div', 'slide-dim'));
+  slide.append(watermark, rankFx.el, inner, soundButton, el('div', 'slide-dim'));
 
   slide.querySelectorAll('.reveal').forEach((node, i) => {
     node.style.setProperty('--d', `${0.15 + i * 0.09}s`);
   });
 
-  return { el: slide, trailer, rank: rankTicker, bg };
+  return { el: slide, trailer, rank: rankTicker, rankFx, bg };
 }
 
 /* ── Outro slide ────────────────────────────────────────────────── */
@@ -270,6 +336,7 @@ const stage = document.getElementById('stage');
 const railEl = document.getElementById('rail');
 const themes = [hero.theme, ...games.map((g) => g.theme), outro.theme];
 const drawer = createDrawer();
+const audioDirector = createAudioDirector(games);
 
 const slideCtrls = [buildHeroSlide(), ...games.map(buildGameSlide), buildOutroSlide()];
 slideCtrls.forEach((c) => stage.appendChild(c.el));
@@ -296,7 +363,12 @@ scrollCtrl = initStageScroll(
   stage,
   slideCtrls.map((c) => c.el),
   {
-    onProgress: (p) => rail.update(p),
+    onProgress: (p) => {
+      const seg = p * (slideCtrls.length - 1);
+      rail.update(p);
+      slideCtrls.forEach((ctrl) => ctrl.rankFx?.update(seg));
+      audioDirector.update(seg);
+    },
     onActive: (index) => {
       currentIndex = index;
       drawer.close();
@@ -329,7 +401,10 @@ scrollCtrl = initStageScroll(
 );
 
 // Fonts shift node positions once loaded; re-measure the rail.
-document.fonts?.ready.then(() => rail.measure());
+document.fonts?.ready.then(() => {
+  rail.measure();
+  slideCtrls.forEach((ctrl) => ctrl.rankFx?.measure());
+});
 
 // Bandwidth/battery: stop every background video (and the hero loop) while
 // the tab isn't visible; resume only whichever slide is actually active.

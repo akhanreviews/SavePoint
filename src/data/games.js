@@ -62,6 +62,7 @@ export const games = [
     review: 'A god learns to be a father, and a franchise learns to be quiet.',
     model: asset('models/gow2018.glb'),
     background: asset('videos/gow2018.mp4'),
+    audio: asset('audio/gow2018.m4a'),
   },
   {
     slug: 'mafia',
@@ -82,6 +83,7 @@ export const games = [
     review: 'A cab driver takes one fare too many and pays for it for the rest of his life.',
     model: asset('models/mafia.glb'),
     background: asset('videos/mafia.mp4'),
+    audio: asset('audio/mafia.m4a'),
   },
   {
     slug: 'detroit',
@@ -102,6 +104,7 @@ export const games = [
     review: 'Every choice is a fingerprint; no two playthroughs confess the same story.',
     model: asset('models/detroit.glb'),
     background: asset('videos/detroit.mp4'),
+    audio: asset('audio/detroit.m4a'),
   },
   {
     slug: 'tsushima',
@@ -122,6 +125,7 @@ export const games = [
     review: 'A samurai film you can walk through, one gust of wind at a time.',
     model: asset('models/tsushima.glb'),
     background: asset('videos/tsushima.mp4'),
+    audio: asset('audio/tsushima.m4a'),
   },
   {
     slug: 'uncharted3',
@@ -143,6 +147,7 @@ export const games = [
     review: 'Greatness from small beginnings — and the desert has never looked so cruel.',
     model: asset('models/uncharted3.glb'),
     background: asset('videos/uncharted3.mp4'),
+    audio: asset('audio/uncharted3.m4a'),
   },
   {
     slug: 'tlou',
@@ -165,6 +170,7 @@ export const games = [
     review: 'Two games about what love makes people do, and what it costs everyone else.',
     model: asset('models/tlou.glb'),
     background: asset('videos/tlou.mp4'),
+    audio: asset('audio/tlou.m4a'),
   },
   {
     slug: 'mele',
@@ -185,6 +191,7 @@ export const games = [
     review: 'Three games, one Shepard, and a galaxy that remembers everything you did.',
     model: asset('models/mele.glb'),
     background: asset('videos/mele.mp4'),
+    audio: asset('audio/mele.m4a'),
   },
   {
     slug: 'witcher3',
@@ -205,6 +212,7 @@ export const games = [
     review: 'The side quests other games apologize for are the main event here.',
     model: asset('models/witcher3.glb'),
     background: asset('videos/witcher3.mp4'),
+    audio: asset('audio/witcher3.m4a'),
   },
   {
     slug: 'cp2077',
@@ -225,6 +233,7 @@ export const games = [
     review: 'Night City always wins — but it puts on one hell of a show first.',
     model: asset('models/cp2077.glb'),
     background: asset('videos/cp2077.mp4'),
+    audio: asset('audio/cp2077.m4a'),
   },
   {
     slug: 'rdr2',
@@ -245,6 +254,7 @@ export const games = [
     review: 'A eulogy for the American outlaw, told one sunrise at a time.',
     model: asset('models/rdr2.glb'),
     background: asset('videos/rdr2.mp4'),
+    audio: asset('audio/rdr2.m4a'),
   },
 ];
 

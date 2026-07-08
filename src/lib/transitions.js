@@ -14,7 +14,7 @@ const OPEN = 'inset(0% 0% 0% 0%)';
 /**
  * Pins the stage and scrubs one master timeline: each slide wipes up
  * over the previous one. `onProgress` gets the raw 0..1 progress (drives
- * the rail shine); `onActive` fires when the halfway point of a wipe is
+ * scrubbed effects); `onActive` fires when the halfway point of a wipe is
  * crossed (drives node ignition, trailer playback, content reveals).
  */
 export function initStageScroll(stage, slides, { onProgress, onActive }) {
@@ -55,12 +55,8 @@ export function initStageScroll(stage, slides, { onProgress, onActive }) {
       );
 
     if (!reduced) {
-      const watermark = slide.querySelector('.watermark');
       const inner = slide.querySelector('.slide-inner');
-      const prevWatermark = prev.querySelector('.watermark');
-      if (watermark) tl.fromTo(watermark, { y: '18vh' }, { y: '0vh', duration: 1, ease: 'none' }, i - 1);
       if (inner) tl.fromTo(inner, { y: '9vh' }, { y: '0vh', duration: 1, ease: 'none' }, i - 1);
-      if (prevWatermark) tl.fromTo(prevWatermark, { y: '0vh' }, { y: '-8vh', duration: 1, ease: 'none' }, i - 1);
     }
   });
 

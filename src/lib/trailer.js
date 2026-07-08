@@ -19,7 +19,7 @@ const SOURCE_LABEL = {
   local: 'Local video',
 };
 
-export function createTrailerPane(game, trailers) {
+export function createTrailerPane(game, trailers, { onAudioStateChange } = {}) {
   const wrap = document.createElement('div');
   wrap.className = 'trailer reveal';
 
@@ -40,7 +40,20 @@ export function createTrailerPane(game, trailers) {
   let mounted = false;
   let video = null;
   let facade = null;
+  let youtubeIframe = null;
   let hls = null;
+
+  const emitNativeAudioState = () => {
+    if (!video) return;
+    onAudioStateChange?.({
+      audible: !video.paused && !video.muted && video.volume > 0,
+      control: {
+        mute() {
+          if (video) video.muted = true;
+        },
+      },
+    });
+  };
 
   function mountVideo(attach) {
     video = document.createElement('video');
@@ -49,12 +62,16 @@ export function createTrailerPane(game, trailers) {
     video.playsInline = true;
     video.preload = 'metadata';
     if (source.poster) video.poster = source.poster;
+    ['volumechange', 'play', 'pause', 'ended'].forEach((type) => {
+      video.addEventListener(type, emitNativeAudioState);
+    });
     attach(video);
     wrap.appendChild(video);
   }
 
   function unmountVideo() {
     if (!video) return;
+    onAudioStateChange?.({ audible: false });
     hls?.destroy();
     hls = null;
     video.pause();
@@ -94,12 +111,24 @@ export function createTrailerPane(game, trailers) {
       facade.appendChild(glyph);
       facade.addEventListener('click', () => {
         const iframe = document.createElement('iframe');
-        iframe.src = `https://www.youtube-nocookie.com/embed/${source.id}?autoplay=1&rel=0`;
+        youtubeIframe = iframe;
+        iframe.src = `https://www.youtube-nocookie.com/embed/${source.id}?autoplay=1&rel=0&enablejsapi=1`;
         iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
         iframe.allowFullscreen = true;
         iframe.title = `${game.title} trailer`;
         wrap.appendChild(iframe);
         facade.style.display = 'none';
+        onAudioStateChange?.({
+          audible: true,
+          control: {
+            mute() {
+              youtubeIframe?.contentWindow?.postMessage(
+                JSON.stringify({ event: 'command', func: 'mute', args: [] }),
+                '*'
+              );
+            },
+          },
+        });
       });
       wrap.appendChild(facade);
     }
@@ -123,7 +152,9 @@ export function createTrailerPane(game, trailers) {
       // Tear the YouTube iframe down so audio stops; the facade returns.
       const iframe = wrap.querySelector('iframe');
       if (iframe) {
+        onAudioStateChange?.({ audible: false });
         iframe.remove();
+        youtubeIframe = null;
         if (facade) facade.style.display = '';
       }
     },

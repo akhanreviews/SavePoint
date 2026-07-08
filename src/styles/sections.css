@@ -178,6 +178,7 @@
   position: absolute;
   right: -1vw;
   bottom: -9vh;
+  z-index: 0;
   font-weight: 900;
   font-size: 46vh;
   line-height: 1;
@@ -186,20 +187,129 @@
   -webkit-text-stroke: 1px color-mix(in srgb, var(--primary) 32%, transparent);
   user-select: none;
   pointer-events: none;
-  transition: -webkit-text-stroke-color 0.55s ease;
+  opacity: 0;
+  transform-origin: center;
+  transition: -webkit-text-stroke-color 0.18s ease, filter 0.18s ease;
+}
+
+.game.is-wiping .watermark {
+  will-change: transform, opacity;
 }
 
 .watermark.is-lit {
   -webkit-text-stroke: 1px color-mix(in srgb, var(--gold-hot) 85%, transparent);
+  filter:
+    drop-shadow(0 0 8px color-mix(in srgb, var(--gold) 45%, transparent))
+    drop-shadow(0 0 24px color-mix(in srgb, var(--gold) 20%, transparent));
+}
+
+.rank-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
 .slide-inner {
   position: relative;
+  z-index: 2;
   height: 100%;
   display: grid;
   grid-template-rows: auto 1fr;
   gap: 2.5vh;
   padding: 7vh 4.5vw 6vh calc(var(--rail-w) + 4vw);
+}
+
+/* Universal soundtrack state, repeated in the same location on every game. */
+.sound-toggle {
+  position: absolute;
+  left: calc(var(--rail-w) + 4vw);
+  bottom: 2.4vh;
+  z-index: 3;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  color: var(--sound-color, var(--primary));
+  opacity: 0.58;
+  border: 1px solid color-mix(in srgb, currentColor 38%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  transition: opacity 0.2s ease, color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.sound-toggle.needs-unlock {
+  width: auto;
+  padding: 0 14px;
+  gap: 8px;
+  opacity: 0.9;
+  border-radius: 999px;
+  color: var(--gold-hot);
+  animation: sound-unlock-pulse 2.2s ease-in-out infinite;
+}
+
+.sound-toggle-label {
+  display: none;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.sound-toggle.needs-unlock .sound-toggle-label {
+  display: inline;
+}
+
+@keyframes sound-unlock-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--gold) 0%, transparent); }
+  50% { box-shadow: 0 0 22px 1px color-mix(in srgb, var(--gold) 26%, transparent); }
+}
+
+.sound-toggle:hover,
+.sound-toggle:focus-visible {
+  opacity: 1;
+  color: var(--gold-hot);
+  border-color: color-mix(in srgb, currentColor 70%, transparent);
+  background: color-mix(in srgb, var(--bg) 88%, black);
+}
+
+.sound-toggle:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.sound-toggle svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  overflow: visible;
+  fill: currentColor;
+}
+
+.sound-toggle .sound-wave,
+.sound-toggle .sound-slash {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sound-toggle .sound-slash {
+  opacity: 0;
+}
+
+.sound-toggle.is-muted .sound-wave {
+  opacity: 0;
+}
+
+.sound-toggle.is-muted .sound-slash {
+  opacity: 1;
 }
 
 .game-head {
@@ -821,6 +931,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .rank-fx {
+    display: none;
+  }
+
   .credits {
     overflow-y: auto;
   }
@@ -878,6 +992,11 @@
 
   .watermark {
     font-size: 30vh;
+  }
+
+  .sound-toggle {
+    left: calc(var(--rail-w) + 4vw);
+    bottom: 1.5vh;
   }
 
   .game-head {

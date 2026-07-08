@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "test": "node scripts/test-audio-director.mjs",
     "preview": "vite preview",
     "trailers": "node scripts/fetch-steam-trailers.mjs"
   },

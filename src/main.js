@@ -8,11 +8,11 @@ import trailers from './data/trailers.json';
 import { initStageScroll } from './lib/transitions.js';
 import { createRail } from './lib/timeline.js';
 import { createTrailerPane } from './lib/trailer.js';
-import { createModelPane } from './lib/viewer.js';
 import { createRankTicker } from './lib/rankTicker.js';
 import { createHeroDust } from './lib/dust.js';
 import { initBoot } from './lib/boot.js';
 import { initCursor } from './lib/cursor.js';
+import { createDrawer } from './lib/drawer.js';
 
 const el = (tag, cls, text) => {
   const node = document.createElement(tag);
@@ -171,10 +171,17 @@ function buildGameSlide(game) {
   const media = el('div', 'media-col');
   media.append(trailer.el, facts, el('p', 'review reveal', game.review));
 
-  const model = createModelPane(game);
+  const modelTab = document.createElement('button');
+  modelTab.type = 'button';
+  modelTab.className = 'model-tab';
+  modelTab.setAttribute('aria-haspopup', 'dialog');
+  modelTab.setAttribute('aria-expanded', 'false');
+  modelTab.setAttribute('aria-label', `View ${game.character.name} in 3D`);
+  modelTab.append(el('span', 'model-tab-label', '3D Model'), el('span', 'model-tab-chevron'));
+  modelTab.addEventListener('click', () => drawer.openFor(game, modelTab));
 
   const body = el('div', 'game-body');
-  body.append(media);
+  body.append(media, modelTab);
 
   const inner = el('div', 'slide-inner');
   inner.append(head, body);
@@ -186,7 +193,7 @@ function buildGameSlide(game) {
     node.style.setProperty('--d', `${0.15 + i * 0.09}s`);
   });
 
-  return { el: slide, trailer, model, rank: rankTicker, bg };
+  return { el: slide, trailer, rank: rankTicker, bg };
 }
 
 /* ── Outro slide ────────────────────────────────────────────────── */
@@ -250,6 +257,7 @@ function buildOutroSlide() {
 const stage = document.getElementById('stage');
 const railEl = document.getElementById('rail');
 const themes = [hero.theme, ...games.map((g) => g.theme), outro.theme];
+const drawer = createDrawer();
 
 const slideCtrls = [buildHeroSlide(), ...games.map(buildGameSlide), buildOutroSlide()];
 slideCtrls.forEach((c) => stage.appendChild(c.el));
@@ -279,6 +287,7 @@ scrollCtrl = initStageScroll(
     onProgress: (p) => rail.update(p),
     onActive: (index) => {
       currentIndex = index;
+      drawer.close();
       rail.setActive(index);
       const accent = themes[index]?.primary ?? 'var(--gold)';
       railEl.style.setProperty('--rail-accent', accent);
@@ -288,7 +297,6 @@ scrollCtrl = initStageScroll(
         ctrl.el.classList.toggle('is-active', applyActive);
         if (i === index) {
           ctrl.trailer?.activate();
-          ctrl.model?.activate();
           ctrl.rank?.play();
           ctrl.dust?.activate();
           ctrl.bg?.activate();
@@ -337,7 +345,3 @@ const boot = initBoot({ heroVideo: slideCtrls[0].video, logoUrls: games.map((g) 
 boot.finish();
 
 initCursor();
-
-// model-viewer (three.js) is heavy; load it after the page is interactive.
-// Custom elements upgrade in place whenever it finishes.
-import('@google/model-viewer');

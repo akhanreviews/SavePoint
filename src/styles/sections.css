@@ -491,6 +491,166 @@
   color: color-mix(in srgb, var(--text) 45%, transparent);
 }
 
+/* ── 3D model drawer tab + overlay ──────────────────────────────── */
+
+.model-tab {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 1.2rem 0.55rem;
+  background: color-mix(in srgb, var(--bg) 80%, black 15%);
+  border: 1px solid color-mix(in srgb, var(--primary) 45%, transparent);
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  transition: padding-right 0.25s ease, background 0.25s ease;
+}
+
+.model-tab:hover,
+.model-tab:focus-visible {
+  padding-right: 0.95rem;
+  background: color-mix(in srgb, var(--primary) 18%, var(--bg));
+}
+
+.model-tab-label {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.model-tab-chevron {
+  width: 7px;
+  height: 7px;
+  border-style: solid;
+  border-color: var(--primary);
+  border-width: 0 2px 2px 0;
+  transform: rotate(135deg);
+}
+
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+.drawer-overlay.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.drawer-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: min(520px, 92vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  border-left: 1px solid color-mix(in srgb, var(--primary) 35%, transparent);
+  box-shadow: -50px 0 90px -30px rgba(0, 0, 0, 0.65);
+  transform: translateX(100%);
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.drawer-overlay.is-open .drawer-panel {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 2.2rem 1.6rem 1.2rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
+}
+
+.drawer-title {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.drawer-close {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--text) 25%, transparent);
+  border-radius: 50%;
+  transition: border-color 0.3s, background 0.3s;
+}
+
+.drawer-close:hover {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+}
+
+.drawer-close::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-style: solid;
+  border-color: var(--text);
+  border-width: 0 2px 2px 0;
+  transform: rotate(-45deg);
+  margin-left: -2px;
+}
+
+.drawer-body {
+  flex: 1;
+  min-height: 0;
+  padding: 1.6rem;
+  display: flex;
+}
+
+.drawer-body .model-col {
+  flex: 1;
+}
+
+/* The model pane's .reveal fade only fires under .slide.is-active — inside
+   the drawer it should just be visible once the panel finishes sliding in. */
+.drawer-body .reveal {
+  opacity: 1;
+  transform: none;
+}
+
+@media (max-width: 960px) {
+  .model-tab {
+    padding: 0.9rem 0.4rem;
+  }
+
+  .model-tab-label {
+    font-size: 0.6rem;
+  }
+
+  .drawer-header {
+    padding: 1.6rem 1.2rem 1rem;
+  }
+
+  .drawer-body {
+    padding: 1.2rem;
+  }
+}
+
 /* ── Outro slide ────────────────────────────────────────────────── */
 
 .outro {

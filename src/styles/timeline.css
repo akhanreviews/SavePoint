@@ -1,0 +1,259 @@
+/* ── Left rail: countdown timeline ──────────────────────────────── */
+
+.rail {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--rail-w);
+  height: 100vh;
+  height: 100svh;
+  z-index: 100;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  --rail-accent: var(--gold);
+}
+
+/* Connector track running behind the nodes */
+.rail-line {
+  position: absolute;
+  top: 3.5vh;
+  bottom: 3.5vh;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+/* Gold fill from the top down to the current position */
+.rail-line-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--rail-accent) 35%, transparent),
+    var(--rail-accent)
+  );
+}
+
+/* The traveling shine: a bright segment that flows through the gaps */
+.rail-pulse {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 7px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+  border-radius: 4px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--rail-accent) 70%, white) 45%,
+    color-mix(in srgb, var(--rail-accent) 70%, white) 55%,
+    transparent
+  );
+  filter:
+    drop-shadow(0 0 7px var(--rail-accent))
+    drop-shadow(0 0 18px color-mix(in srgb, var(--rail-accent) 35%, transparent));
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rail-nodes {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3.5vh 0;
+  width: 100%;
+}
+
+.rail-node {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(10, 10, 12, 0.6);
+  backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  transition: border-color 0.4s, box-shadow 0.4s, transform 0.3s;
+}
+
+.rail-node:hover {
+  transform: scale(1.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.rail-node img {
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
+  filter: saturate(0.35) brightness(0.9);
+  transition: filter 0.4s;
+}
+
+/* Hero node: a small diamond instead of a logo */
+.rail-node--hero {
+  width: 26px;
+  height: 26px;
+}
+
+.rail-node--hero .diamond {
+  width: 9px;
+  height: 9px;
+  transform: rotate(45deg);
+  background: rgba(255, 255, 255, 0.55);
+  transition: background 0.4s;
+}
+
+/* Nodes the countdown has already passed */
+.rail-node.is-past {
+  border-color: var(--gold-dim);
+}
+
+.rail-node.is-past img {
+  filter: saturate(0.7) brightness(0.95);
+}
+
+/* ── Active node: gold border + recurring shine sweep ───────────── */
+
+.rail-node.is-active {
+  border-color: var(--rail-accent);
+  box-shadow:
+    0 0 16px 1px color-mix(in srgb, var(--rail-accent) 35%, transparent),
+    0 0 40px -4px color-mix(in srgb, var(--rail-accent) 35%, transparent);
+}
+
+.rail-node.is-active img {
+  filter: none;
+}
+
+.rail-node.is-active .diamond {
+  background: var(--rail-accent);
+}
+
+/* Rotating shine ring, masked to the border */
+.rail-node::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg 250deg,
+    color-mix(in srgb, var(--rail-accent) 70%, white) 300deg,
+    transparent 350deg
+  );
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rail-node.is-active::after {
+  opacity: 1;
+  animation: ring-spin 2.8s linear infinite;
+}
+
+@keyframes ring-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Secret nodes: logo concealed until the countdown reaches them ─ */
+
+.rail-node .mystery {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.32);
+  opacity: 0;
+  transition: opacity 0.45s;
+  pointer-events: none;
+}
+
+.rail-node.is-secret .mystery {
+  opacity: 1;
+}
+
+/* Gold artifact sweep: particle canvas + glowing sweep line */
+.artifact-canvas {
+  position: absolute;
+  inset: -12px;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 2;
+}
+
+.artifact-glow {
+  position: absolute;
+  left: -5px;
+  right: -5px;
+  top: 100%;
+  height: 8px;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: radial-gradient(50% 100% at 50% 50%, var(--gold-hot), var(--gold) 45%, transparent 72%);
+  filter: blur(0.5px) drop-shadow(0 0 6px var(--gold)) drop-shadow(0 0 14px var(--gold-dim));
+  opacity: 0;
+  pointer-events: none;
+  z-index: 3;
+  transition: opacity 0.25s;
+}
+
+/* ── Hover tooltip ──────────────────────────────────────────────── */
+
+.rail-tip {
+  position: absolute;
+  left: calc(100% + 14px);
+  top: 50%;
+  transform: translateY(-50%) translateX(-6px);
+  white-space: nowrap;
+  background: rgba(8, 8, 10, 0.92);
+  border: 1px solid var(--gold-dim);
+  padding: 0.45rem 0.85rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #eee;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+.rail-node:hover .rail-tip,
+.rail-node:focus-visible .rail-tip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+
+@media (max-width: 960px) {
+  .rail-node {
+    width: 30px;
+    height: 30px;
+  }
+
+  .rail-node--hero {
+    width: 18px;
+    height: 18px;
+  }
+
+  .rail-tip {
+    display: none;
+  }
+}

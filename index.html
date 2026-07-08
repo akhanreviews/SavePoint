@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SavePoint — My Top 10 Games</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,600&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      #boot {
+        position: fixed;
+        inset: 0;
+        z-index: 500;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.3rem;
+        background: #0a0a0c;
+        font-family: 'Archivo', 'Helvetica Neue', system-ui, sans-serif;
+        clip-path: inset(0% 0% 0% 0%);
+        transition: clip-path 0.7s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.4s ease 0.2s;
+      }
+      #boot .boot-glyph {
+        width: 13px;
+        height: 13px;
+        background: #e8c464;
+        transform: rotate(45deg);
+        animation: boot-pulse 1.4s ease-in-out infinite;
+      }
+      #boot .boot-label {
+        margin: 0;
+        font-size: 0.76rem;
+        font-weight: 600;
+        letter-spacing: 0.42em;
+        text-transform: uppercase;
+        color: #e8c464;
+      }
+      #boot .boot-track {
+        width: 220px;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.12);
+        overflow: hidden;
+      }
+      #boot .boot-bar {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(to right, rgba(232, 196, 100, 0.4), #e8c464);
+      }
+      #boot.is-exiting {
+        clip-path: inset(0% 0% 100% 0%);
+        opacity: 0;
+      }
+      @keyframes boot-pulse {
+        0%, 100% { opacity: 0.5; transform: rotate(45deg) scale(0.85); }
+        50% { opacity: 1; transform: rotate(45deg) scale(1); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #boot .boot-glyph { animation: none; }
+        #boot { transition: opacity 0.4s ease; }
+        #boot.is-exiting { clip-path: inset(0% 0% 0% 0%); }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="boot" aria-hidden="true">
+      <span class="boot-glyph"></span>
+      <p class="boot-label">Loading save&hellip;</p>
+      <div class="boot-track"><div class="boot-bar"></div></div>
+    </div>
+    <nav id="rail" class="rail" aria-label="Game countdown timeline"></nav>
+    <main id="stage" class="stage"></main>
+    <div class="grain" aria-hidden="true"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

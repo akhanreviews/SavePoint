@@ -1,0 +1,150 @@
+:root {
+  --gold: #e8c464;
+  --gold-hot: #ffe9a3;
+  --gold-dim: rgba(232, 196, 100, 0.35);
+  --rail-w: 92px;
+  --ink: #0a0a0c;
+
+  font-family: 'Archivo', 'Helvetica Neue', system-ui, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--ink);
+  color: #eee;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+video {
+  max-width: 100%;
+  display: block;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+p,
+dl,
+dd,
+dt {
+  margin: 0;
+}
+
+::selection {
+  background: var(--gold);
+  color: var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Film grain + vignette ──────────────────────────────────────── */
+
+.grain {
+  position: fixed;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  z-index: 200;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-shift 1s steps(8) infinite;
+}
+
+@keyframes grain-shift {
+  0% { transform: translate(0, 0); }
+  12.5% { transform: translate(-2%, 3%); }
+  25% { transform: translate(3%, -2%); }
+  37.5% { transform: translate(-3%, -3%); }
+  50% { transform: translate(2%, 2%); }
+  62.5% { transform: translate(-2%, 1%); }
+  75% { transform: translate(3%, 3%); }
+  87.5% { transform: translate(-1%, -2%); }
+  100% { transform: translate(0, 0); }
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 190;
+  pointer-events: none;
+  background: radial-gradient(120% 120% at 50% 45%, transparent 60%, rgba(0, 0, 0, 0.35));
+}
+
+/* ── Custom cursor overlay (fine pointers only) ─────────────────── */
+
+.cursor-dot,
+.cursor-halo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 300;
+  opacity: 0;
+  transition: opacity 0.3s ease, width 0.25s ease, height 0.25s ease, background 0.3s ease;
+}
+
+.cursor-dot {
+  width: 6px;
+  height: 6px;
+  background: #fff;
+  mix-blend-mode: difference;
+}
+
+.cursor-dot.is-hover {
+  width: 3px;
+  height: 3px;
+}
+
+.cursor-halo {
+  width: 36px;
+  height: 36px;
+  border: 1px solid color-mix(in srgb, var(--cursor-color, var(--gold)) 60%, transparent);
+  transition: opacity 0.3s ease, width 0.3s ease, height 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+}
+
+.cursor-halo.is-hover {
+  width: 58px;
+  height: 58px;
+  background: color-mix(in srgb, var(--cursor-color, var(--gold)) 18%, transparent);
+}
+
+@media (pointer: coarse), (hover: none) {
+  .cursor-dot,
+  .cursor-halo {
+    display: none;
+  }
+}

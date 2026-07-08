@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+  <!-- Hand-made placeholder wordmark: Uncharted 3 has no Steam release, so no CDN logo. -->
+  <g text-anchor="middle">
+    <text x="320" y="150" font-family="Palatino, 'Book Antiqua', Georgia, serif" font-size="76" font-weight="700" letter-spacing="10" fill="#f5ead2">UNCHARTED</text>
+    <rect x="180" y="184" width="120" height="3" fill="#d98e32"/>
+    <rect x="340" y="184" width="120" height="3" fill="#d98e32"/>
+    <text x="320" y="238" font-family="Palatino, 'Book Antiqua', Georgia, serif" font-size="120" font-weight="700" fill="#d98e32">3</text>
+    <text x="320" y="292" font-family="Palatino, 'Book Antiqua', Georgia, serif" font-size="28" font-style="italic" letter-spacing="5" fill="#c9b697">Drake's Deception</text>
+  </g>
+</svg>

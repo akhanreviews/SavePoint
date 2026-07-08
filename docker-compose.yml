@@ -1,0 +1,14 @@
+services:
+  savepoint:
+    build:
+      context: .
+    image: savepoint-site:local
+    restart: unless-stopped
+    ports:
+      - "${TAILSCALE_BIND:-0.0.0.0}:${APP_PORT:-8080}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3

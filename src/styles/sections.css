@@ -1,0 +1,693 @@
+/* ── Stage: one pinned viewport, slides stacked and wiped ───────── */
+
+.stage {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  will-change: clip-path, transform;
+}
+
+/* Black veil the master timeline fades in over the outgoing slide */
+.slide-dim {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ── Hero ───────────────────────────────────────────────────────── */
+
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, rgba(5, 6, 8, 0.82) 0%, rgba(5, 6, 8, 0.1) 45%),
+    linear-gradient(to right, rgba(5, 6, 8, 0.55) 0%, transparent 40%);
+}
+
+.hero-dust {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 6vw 12vh calc(var(--rail-w) + 5vw);
+}
+
+.hero-kicker {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.2rem;
+}
+
+.hero-title {
+  font-weight: 900;
+  font-size: clamp(2.4rem, 11vw, 9.5rem);
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.ht-mask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+}
+
+.ht-letter {
+  display: inline-block;
+  background-image: linear-gradient(100deg, var(--text) 40%, var(--gold-hot) 50%, var(--text) 60%);
+  background-size: 250% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: shimmer-sweep 7s ease-in-out infinite;
+}
+
+@keyframes shimmer-sweep {
+  0%, 80% { background-position: 200% 0; }
+  92%, 100% { background-position: -60% 0; }
+}
+
+.hero-sub {
+  font-family: 'Newsreader', Georgia, serif;
+  font-style: italic;
+  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  color: var(--accent);
+  margin-top: 1.4rem;
+  max-width: 34ch;
+}
+
+.hero-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 4.5vh;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.hero-cue::before {
+  content: '';
+  width: 44px;
+  height: 1px;
+  background: var(--gold);
+  animation: cue-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes cue-pulse {
+  0%, 100% { transform: scaleX(0.4); opacity: 0.4; transform-origin: left; }
+  50% { transform: scaleX(1); opacity: 1; transform-origin: left; }
+}
+
+/* ── Game slides ────────────────────────────────────────────────── */
+
+.game {
+  background:
+    radial-gradient(120% 90% at 78% 10%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 60%),
+    var(--bg);
+}
+
+/* Giant rank numeral behind the content */
+.watermark {
+  position: absolute;
+  right: -1vw;
+  bottom: -9vh;
+  font-weight: 900;
+  font-size: 46vh;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--primary) 32%, transparent);
+  user-select: none;
+  pointer-events: none;
+  transition: -webkit-text-stroke-color 0.55s ease;
+}
+
+.watermark.is-lit {
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--gold-hot) 85%, transparent);
+}
+
+.slide-inner {
+  position: relative;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 2.5vh;
+  padding: 7vh 4.5vw 6vh calc(var(--rail-w) + 4vw);
+}
+
+.game-head {
+  display: flex;
+  align-items: baseline;
+  gap: 2rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--text) 18%, transparent);
+  padding-bottom: 2vh;
+}
+
+.rank-tag {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.game-title {
+  font-weight: 800;
+  font-size: clamp(1.8rem, 3.6vw, 3.4rem);
+  line-height: 1;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+}
+
+.game-year {
+  margin-left: auto;
+  font-family: 'Newsreader', Georgia, serif;
+  font-style: italic;
+  font-size: 1.05rem;
+  color: color-mix(in srgb, var(--text) 55%, transparent);
+  white-space: nowrap;
+}
+
+.game-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+  gap: 3.5vw;
+  min-height: 0;
+}
+
+.media-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2.6vh;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ── Trailer pane ───────────────────────────────────────────────── */
+
+.trailer {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  max-height: 50vh;
+  width: 100%;
+  background: #000;
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+  box-shadow: 0 24px 60px -30px color-mix(in srgb, var(--primary) 55%, #000);
+}
+
+/* HUD viewfinder corners */
+.tf-corner {
+  position: absolute;
+  z-index: 2;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  border-color: var(--primary);
+  border-style: solid;
+  border-width: 0;
+  opacity: 0;
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  animation: corner-breathe 4.4s ease-in-out infinite;
+}
+
+.tf-tl { top: -5px; left: -5px; border-width: 2px 0 0 2px; transform: translate(-8px, -8px); }
+.tf-tr { top: -5px; right: -5px; border-width: 2px 2px 0 0; transform: translate(8px, -8px); }
+.tf-bl { bottom: -5px; left: -5px; border-width: 0 0 2px 2px; transform: translate(-8px, 8px); }
+.tf-br { bottom: -5px; right: -5px; border-width: 0 2px 2px 0; transform: translate(8px, 8px); }
+
+.slide.is-active .tf-corner {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+.slide.is-active .tf-tl { transition-delay: 0.1s; }
+.slide.is-active .tf-tr { transition-delay: 0.17s; }
+.slide.is-active .tf-bl { transition-delay: 0.24s; }
+.slide.is-active .tf-br { transition-delay: 0.31s; }
+
+@keyframes corner-breathe {
+  0%, 100% { margin: 0; }
+  50% { margin: -1px; }
+}
+
+/* Pulsing REC dot beside the source label */
+.trailer-rec {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 0.5em;
+  border-radius: 50%;
+  background: var(--primary);
+  vertical-align: middle;
+  animation: rec-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes rec-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.trailer video,
+.trailer iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.trailer video {
+  object-fit: cover;
+}
+
+.trailer-source {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translateY(-100%);
+  padding-bottom: 6px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--text) 45%, transparent);
+}
+
+.yt-facade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  display: grid;
+  place-items: center;
+}
+
+.yt-facade::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  transition: background 0.3s;
+}
+
+.yt-facade:hover::before {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.yt-facade .play-glyph {
+  position: relative;
+  width: 74px;
+  height: 74px;
+  border: 1px solid var(--text);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  transition: transform 0.3s, border-color 0.3s;
+}
+
+.yt-facade:hover .play-glyph {
+  transform: scale(1.08);
+  border-color: var(--gold);
+}
+
+.yt-facade .play-glyph::after {
+  content: '';
+  border-style: solid;
+  border-width: 11px 0 11px 19px;
+  border-color: transparent transparent transparent var(--text);
+  margin-left: 5px;
+}
+
+/* ── Facts: character / mission / review ────────────────────────── */
+
+.facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5vw;
+}
+
+.fact dt {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--primary);
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
+  margin-bottom: 0.9rem;
+}
+
+.fact dd .fact-name {
+  display: block;
+  font-weight: 700;
+  font-size: clamp(1rem, 1.5vw, 1.3rem);
+  letter-spacing: 0.01em;
+  margin-bottom: 0.35rem;
+}
+
+.fact dd .fact-blurb {
+  display: block;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: color-mix(in srgb, var(--text) 68%, transparent);
+  max-width: 42ch;
+}
+
+.review {
+  font-family: 'Newsreader', Georgia, serif;
+  font-style: italic;
+  font-size: clamp(1.15rem, 1.9vw, 1.6rem);
+  line-height: 1.4;
+  color: var(--accent);
+  max-width: 46ch;
+}
+
+.review::before {
+  content: '— ';
+  color: var(--primary);
+}
+
+/* ── 3D model pane ──────────────────────────────────────────────── */
+
+.model-col {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.model-col model-viewer {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  --poster-color: transparent;
+  background:
+    radial-gradient(60% 45% at 50% 78%, color-mix(in srgb, var(--primary) 22%, transparent), transparent 70%);
+}
+
+.model-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  border: 1px dashed color-mix(in srgb, var(--text) 25%, transparent);
+  text-align: center;
+  padding: 2rem;
+}
+
+.model-empty .who {
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.model-empty .how {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.72rem;
+  line-height: 1.7;
+  color: color-mix(in srgb, var(--text) 55%, transparent);
+}
+
+.model-caption {
+  padding-top: 1rem;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  text-align: center;
+  color: color-mix(in srgb, var(--text) 45%, transparent);
+}
+
+/* ── Outro slide ────────────────────────────────────────────────── */
+
+.outro {
+  background:
+    radial-gradient(120% 90% at 50% 12%, color-mix(in srgb, var(--primary) 16%, transparent), transparent 60%),
+    var(--bg);
+}
+
+.outro-inner {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4vh;
+  padding: 6vh 6vw 6vh calc(var(--rail-w) + 6vw);
+  text-align: center;
+}
+
+.outro-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.outro-glyph {
+  width: 18px;
+  height: 18px;
+  background: var(--primary);
+  transform: rotate(45deg);
+  box-shadow: 0 0 22px 2px color-mix(in srgb, var(--primary) 45%, transparent);
+  animation: outro-pulse 2.2s ease-in-out infinite;
+  margin-bottom: 0.6rem;
+}
+
+@keyframes outro-pulse {
+  0%, 100% { transform: rotate(45deg) scale(0.85); opacity: 0.75; }
+  50% { transform: rotate(45deg) scale(1.05); opacity: 1; }
+}
+
+.outro-kicker {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.outro-title {
+  font-weight: 900;
+  font-size: clamp(2.2rem, 8vw, 6rem);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.outro-subtitle {
+  font-family: 'Newsreader', Georgia, serif;
+  font-style: italic;
+  font-size: clamp(1rem, 1.6vw, 1.3rem);
+  color: var(--accent);
+  max-width: 46ch;
+}
+
+.credits {
+  width: min(560px, 86vw);
+  height: 32vh;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent);
+}
+
+.credits-track {
+  display: flex;
+  flex-direction: column;
+  animation: credits-scroll 30s linear infinite;
+}
+
+.credits:hover .credits-track {
+  animation-play-state: paused;
+}
+
+@keyframes credits-scroll {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+
+.credit-row {
+  display: grid;
+  grid-template-columns: 28px 3.6rem 1fr auto;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.65rem 0.4rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--text) 12%, transparent);
+}
+
+.credit-row img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  filter: saturate(0.6) brightness(0.95);
+}
+
+.credit-rank {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--primary);
+}
+
+.credit-title {
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.credit-year {
+  font-family: 'Newsreader', Georgia, serif;
+  font-style: italic;
+  font-size: 0.82rem;
+  color: color-mix(in srgb, var(--text) 55%, transparent);
+}
+
+.outro-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.outro-thanks {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--text) 60%, transparent);
+}
+
+.outro-back {
+  border: 1px solid color-mix(in srgb, var(--primary) 55%, transparent);
+  padding: 0.75rem 1.6rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--text);
+  transition: border-color 0.3s, background 0.3s;
+}
+
+.outro-back:hover {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .credits {
+    overflow-y: auto;
+  }
+
+  .credits-track {
+    animation: none;
+  }
+}
+
+/* ── Content reveal when a slide becomes active ─────────────────── */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.7s ease var(--d, 0s), transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) var(--d, 0s);
+}
+
+.slide.is-active .reveal {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+
+@media (max-width: 960px) {
+  :root {
+    --rail-w: 48px;
+  }
+
+  .slide-inner {
+    padding: 5vh 5vw 4vh calc(var(--rail-w) + 4vw);
+    overflow-y: auto;
+  }
+
+  .game-body {
+    display: flex;
+    flex-direction: column;
+    gap: 3vh;
+  }
+
+  .media-col,
+  .model-col {
+    flex: none;
+  }
+
+  .model-col model-viewer,
+  .model-empty {
+    min-height: 38vh;
+  }
+
+  .facts {
+    grid-template-columns: 1fr;
+    gap: 2.2vh;
+  }
+
+  .watermark {
+    font-size: 30vh;
+  }
+
+  .game-head {
+    flex-wrap: wrap;
+    gap: 0.6rem 1.4rem;
+  }
+
+  .outro-inner {
+    padding: 5vh 6vw 4vh calc(var(--rail-w) + 5vw);
+    gap: 2.6vh;
+    overflow-y: auto;
+  }
+
+  .credits {
+    height: 26vh;
+  }
+}

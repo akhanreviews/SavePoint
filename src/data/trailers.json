@@ -1,0 +1,56 @@
+{
+  "292030": {
+    "name": "W3NG ESRB The Witcher 3: Wild Hunt - Geralt and Ciri",
+    "hls": "https://video.akamai.steamstatic.com/store_trailers/292030/533367/ee1f58b16da1bccf359c9305bff8193a0f7926f3/1750502482/hls_264_master.m3u8?t=1674829921",
+    "dash": "https://video.akamai.steamstatic.com/store_trailers/292030/533367/ee1f58b16da1bccf359c9305bff8193a0f7926f3/1750502482/dash_h264.mpd?t=1674829921",
+    "poster": "https://cdn.cloudflare.steamstatic.com/steam/apps/292030/header.jpg"
+  },
+  "1030840": {
+    "name": "Mafia DE Accolades - ESRB - EN",
+    "hls": "https://video.akamai.steamstatic.com/store_trailers/1030840/743333/7baa5ff2102429fa367827c39da2fcce1cb1c134/1750608657/hls_264_master.m3u8?t=1724260130",
+    "dash": "https://video.akamai.steamstatic.com/store_trailers/1030840/743333/7baa5ff2102429fa367827c39da2fcce1cb1c134/1750608657/dash_h264.mpd?t=1724260130",
+    "poster": "https://cdn.cloudflare.steamstatic.com/steam/apps/1030840/header.jpg"
+  },
+  "1091500": {
+    "name": "027_2_1_UpdateTrailer_EN_ESRB M_16x9_1080",
+    "hls": "https://video.akamai.steamstatic.com/store_trailers/1091500/637423/44479aeec630d03dd9af567048ac1d7f055d8d3c/1750617739/hls_264_master.m3u8?t=1701872775",
+    "dash": "https://video.akamai.steamstatic.com/store_trailers/1091500/637423/44479aeec630d03dd9af567048ac1d7f055d8d3c/1750617739/dash_h264.mpd?t=1701872775",
+    "poster": "https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg"
+  },
+  "1174180": {
+    "name": "RDR2 Launch Trailer (US)",
+    "hls": "https://video.akamai.steamstatic.com/store_trailers/1174180/254050/b2cc520c692391e65f2d09067f95001dcf4b434d/1750634049/hls_264_master.m3u8?t=1574881964",
+    "dash": "https://video.akamai.steamstatic.com/store_trailers/1174180/254050/b2cc520c692391e65f2d09067f95001dcf4b434d/1750634049/dash_h264.mpd?t=1574881964",
+    "poster": "https://cdn.cloudflare.steamstatic.com/steam/apps/1174180/header.jpg"
+  },
+  "1222140": {
+    "name": "Detroit: Become Human - Steam Launch Trailer",
+    "hls": "https://video.akamai.steamstatic.com/store_trailers/1222140/282775/c86acba0a15a3378984a05920f3513b23bba9147/1750644428/hls_264_master.m3u8?t=1590429401",
+    "dash": "https://video.akamai.steamstatic.com/store_trailers/1222140/282775/c86acba0a15a3378984a05920f3513b23bba9147/1750644428/dash_h264.mpd?t=1590429401",
+    "poster": "https://cdn.cloudflare.steamstatic.com/steam/apps/1222140/header.jpg"
+  },
+  "1328670": {
+    "name": "Accolades Trailer",
+    "hls": "https://video.akamai.steamstatic.com/store_trailers/1328670/372173/1cc8c9e70e2125b86e6aea9c216ac6a6fb4e14fb/1750672745/hls_264_master.m3u8?t=1621958368",
+    "dash": "https://video.akamai.steamstatic.com/store_trailers/1328670/372173/1cc8c9e70e2125b86e6aea9c216ac6a6fb4e14fb/1750672745/dash_h264.mpd?t=1621958368",
+    "poster": "https://cdn.cloudflare.steamstatic.com/steam/apps/1328670/header.jpg"
+  },
+  "1593500": {
+    "name": "Features Trailer",
+    "hls": "https://video.akamai.steamstatic.com/store_trailers/1593500/423179/503f509cd6c9964f790867e6cda8542789136b85/1750704708/hls_264_master.m3u8?t=1639001817",
+    "dash": "https://video.akamai.steamstatic.com/store_trailers/1593500/423179/503f509cd6c9964f790867e6cda8542789136b85/1750704708/dash_h264.mpd?t=1639001817",
+    "poster": "https://cdn.cloudflare.steamstatic.com/steam/apps/1593500/header.jpg"
+  },
+  "1888930": {
+    "name": "Launch Trailer (EN-US)",
+    "hls": "https://video.akamai.steamstatic.com/store_trailers/1888930/550396/09468ce88d62c431fbbbbbc89c3a0c1b84e50ca8/1750740074/hls_264_master.m3u8?t=1680015399",
+    "dash": "https://video.akamai.steamstatic.com/store_trailers/1888930/550396/09468ce88d62c431fbbbbbc89c3a0c1b84e50ca8/1750740074/dash_h264.mpd?t=1680015399",
+    "poster": "https://cdn.cloudflare.steamstatic.com/steam/apps/1888930/header.jpg"
+  },
+  "2215430": {
+    "name": "Launch Trailer (EN-US)",
+    "hls": "https://video.akamai.steamstatic.com/store_trailers/2215430/698141/03040bb2f64897340d437089399b9815d399e2e2/1750809557/hls_264_master.m3u8?t=1716411558",
+    "dash": "https://video.akamai.steamstatic.com/store_trailers/2215430/698141/03040bb2f64897340d437089399b9815d399e2e2/1750809557/dash_h264.mpd?t=1716411558",
+    "poster": "https://cdn.cloudflare.steamstatic.com/steam/apps/2215430/header.jpg"
+  }
+}

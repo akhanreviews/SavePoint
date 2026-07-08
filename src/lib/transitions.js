@@ -9,6 +9,7 @@ gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 ScrollTrigger.config({ ignoreMobileResize: true });
 
 const PROGRESS_EPSILON = 0.001;
+const SCROLL_DISTANCE_MULTIPLIER = 1.65;
 
 /**
  * Pins the stage and scrubs one master timeline: each slide wipes up
@@ -80,7 +81,7 @@ export function initStageScroll(stage, slides, { onProgress, onActive }) {
     tl.fromTo(
       prev.querySelector('.slide-dim'),
       { opacity: 0 },
-      { opacity: 0.65, duration: 1, ease: 'none' },
+      { opacity: 0.78, duration: 1, ease: 'none' },
       i - 1
     );
 
@@ -93,15 +94,15 @@ export function initStageScroll(stage, slides, { onProgress, onActive }) {
   const trigger = ScrollTrigger.create({
     trigger: stage,
     start: 'top top',
-    end: () => `+=${steps * window.innerHeight}`,
+    end: () => `+=${steps * window.innerHeight * SCROLL_DISTANCE_MULTIPLIER}`,
     pin: true,
-    scrub: 0.6,
+    scrub: 0.9,
     animation: tl,
     snap: {
       snapTo: 1 / steps,
-      duration: { min: 0.25, max: 0.7 },
+      duration: { min: 0.35, max: 0.95 },
       ease: 'power1.inOut',
-      delay: 0.08,
+      delay: 0.16,
       inertia: false,
     },
     onUpdate(self) {

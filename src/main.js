@@ -245,7 +245,6 @@ function buildGameSlide(game, gameIndex) {
   const rank = String(game.rank).padStart(2, '0');
   const watermark = el('span', 'watermark', rank);
   const rankTicker = prefersReducedMotion() ? createRankTicker(watermark) : null;
-  const rankFx = createRankFx(slide, watermark, gameIndex + 1);
 
   const head = el('header', 'game-head reveal');
   head.append(
@@ -283,13 +282,13 @@ function buildGameSlide(game, gameIndex) {
   const soundButton = buildSoundButton(game);
 
   if (bg.placeholder) slide.append(bg.placeholder, el('div', 'slide-scrim'));
-  slide.append(watermark, rankFx.el, inner, soundButton, el('div', 'slide-dim'));
+  slide.append(watermark, inner, soundButton, el('div', 'slide-dim'));
 
   slide.querySelectorAll('.reveal').forEach((node, i) => {
     node.style.setProperty('--d', `${0.15 + i * 0.09}s`);
   });
 
-  return { el: slide, trailer, rank: rankTicker, rankFx, bg };
+  return { el: slide, trailer, rank: rankTicker, rankWatermark: watermark, slideIndex: gameIndex + 1, bg };
 }
 
 /* ── Outro slide ────────────────────────────────────────────────── */
@@ -358,6 +357,17 @@ const audioDirector = createAudioDirector(games);
 
 const slideCtrls = [buildHeroSlide(), ...games.map(buildGameSlide), buildOutroSlide()];
 slideCtrls.forEach((c) => stage.appendChild(c.el));
+const rankFx = createRankFx(
+  stage,
+  slideCtrls
+    .filter((ctrl) => ctrl.rankWatermark)
+    .map((ctrl) => ({
+      slide: ctrl.el,
+      watermark: ctrl.rankWatermark,
+      slideIndex: ctrl.slideIndex,
+    }))
+);
+stage.appendChild(rankFx.el);
 
 let scrollCtrl = null;
 let heroRevealed = false;
@@ -384,7 +394,7 @@ scrollCtrl = initStageScroll(
     onProgress: (p) => {
       const seg = p * (slideCtrls.length - 1);
       rail.update(p);
-      slideCtrls.forEach((ctrl) => ctrl.rankFx?.update(seg));
+      rankFx.update(seg);
       audioDirector.update(seg);
     },
     onActive: (index) => {
@@ -430,7 +440,7 @@ scrollCtrl = initStageScroll(
 // Fonts shift node positions once loaded; re-measure the rail.
 document.fonts?.ready.then(() => {
   rail.measure();
-  slideCtrls.forEach((ctrl) => ctrl.rankFx?.measure());
+  rankFx.measure();
 });
 
 // Bandwidth/battery: stop every background video (and the hero loop) while

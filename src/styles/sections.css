@@ -192,7 +192,7 @@
   line-height: 1;
   letter-spacing: -0.05em;
   color: transparent;
-  -webkit-text-stroke: 1px color-mix(in srgb, var(--primary) 32%, transparent);
+  -webkit-text-stroke: 2px color-mix(in srgb, var(--primary) 42%, transparent);
   user-select: none;
   pointer-events: none;
   opacity: 0;
@@ -205,19 +205,62 @@
 }
 
 .watermark.is-lit {
-  -webkit-text-stroke: 1px color-mix(in srgb, var(--gold-hot) 85%, transparent);
+  -webkit-text-stroke: 3px color-mix(in srgb, var(--gold-hot) 92%, transparent);
   filter:
-    drop-shadow(0 0 8px color-mix(in srgb, var(--gold) 45%, transparent))
-    drop-shadow(0 0 24px color-mix(in srgb, var(--gold) 20%, transparent));
+    drop-shadow(0 0 10px color-mix(in srgb, var(--gold) 58%, transparent))
+    drop-shadow(0 0 30px color-mix(in srgb, var(--gold) 28%, transparent));
 }
 
-.rank-fx {
+.rank-transition-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.rank-transition-layer.is-active {
+  opacity: 1;
+}
+
+.rank-transition-layer.is-active .rank-transition-number {
+  will-change: transform, opacity;
+}
+
+.rank-transition-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(
+      44% 52% at 57% 48%,
+      color-mix(in srgb, var(--gold) 14%, transparent) 0%,
+      transparent 64%
+    ),
+    rgba(0, 0, 0, var(--rank-scrim-opacity, 0));
+  opacity: 0;
+  transition: opacity 0.12s linear;
+}
+
+.rank-transition-layer.is-active .rank-transition-scrim {
+  opacity: 1;
+}
+
+.rank-transition-canvas {
   position: absolute;
   inset: 0;
   z-index: 1;
   width: 100%;
   height: 100%;
   pointer-events: none;
+}
+
+.rank-transition-number {
+  right: auto;
+  bottom: auto;
+  z-index: 2;
+  transform-origin: top left;
+  -webkit-text-stroke-width: 3px;
 }
 
 .slide-inner {
@@ -939,7 +982,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rank-fx {
+  .rank-transition-layer {
     display: none;
   }
 

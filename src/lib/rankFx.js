@@ -1,8 +1,10 @@
 const GOLD = '#e8c464';
 const GOLD_HOT = '#ffe9a3';
-const MAX_PARTICLES = 600;
+const DESKTOP_MAX_PARTICLES = 600;
+const MOBILE_MAX_PARTICLES = 150;
 const ACTIVE_DISTANCE = 0.995;
 const controllers = new Set();
+const glyphCache = new Map();
 
 let resizeTimer = 0;
 let sharedFrame = 0;
@@ -11,6 +13,11 @@ const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
 const lerp = (from, to, amount) => from + (to - from) * amount;
 const prefersReduced = () =>
   window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+const isCoarsePointer = () => window.matchMedia?.('(pointer: coarse)').matches ?? false;
+
+function maxParticles() {
+  return isCoarsePointer() ? MOBILE_MAX_PARTICLES : DESKTOP_MAX_PARTICLES;
+}
 
 function seededRandom(seed) {
   let value = seed >>> 0;
@@ -48,6 +55,47 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
+function sampleGlyphPoints(rank, style) {
+  const key = `${rank}|${style.fontWeight}|${style.fontSize}|${style.fontFamily}`;
+  if (glyphCache.has(key)) return glyphCache.get(key);
+
+  const fontSize = Number.parseFloat(style.fontSize);
+  const sampleCanvas = document.createElement('canvas');
+  const sampleContext = sampleCanvas.getContext('2d', { willReadFrequently: true });
+  sampleContext.font = `${style.fontWeight} ${fontSize}px ${style.fontFamily}`;
+  const metrics = sampleContext.measureText(rank);
+  const glyphWidth = Math.ceil(metrics.actualBoundingBoxLeft + metrics.actualBoundingBoxRight);
+  const glyphHeight = Math.ceil(metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent);
+  const padding = 4;
+
+  sampleCanvas.width = glyphWidth + padding * 2;
+  sampleCanvas.height = glyphHeight + padding * 2;
+  sampleContext.font = `${style.fontWeight} ${fontSize}px ${style.fontFamily}`;
+  sampleContext.fillStyle = '#fff';
+  sampleContext.textBaseline = 'alphabetic';
+  sampleContext.fillText(
+    rank,
+    padding + metrics.actualBoundingBoxLeft,
+    padding + metrics.actualBoundingBoxAscent
+  );
+
+  const { data } = sampleContext.getImageData(0, 0, sampleCanvas.width, sampleCanvas.height);
+  const cap = maxParticles();
+  const area = sampleCanvas.width * sampleCanvas.height;
+  const stride = Math.max(6, Math.round(Math.sqrt(area / cap) * 0.72));
+  const points = [];
+
+  for (let y = 0; y < sampleCanvas.height; y += stride) {
+    for (let x = 0; x < sampleCanvas.width; x += stride) {
+      if (data[(y * sampleCanvas.width + x) * 4 + 3] > 40) points.push({ x, y });
+    }
+  }
+
+  const sampled = { points, width: sampleCanvas.width, height: sampleCanvas.height };
+  glyphCache.set(key, sampled);
+  return sampled;
+}
+
 /**
  * Scroll-scrubbed rank numeral and particle handoff.
  * `slideIndex - seg` is positive below the viewport and negative above it,
@@ -61,6 +109,7 @@ export function createRankFx(slide, watermark, slideIndex) {
   canvas.height = 0;
   const context = canvas.getContext('2d');
   const reduced = prefersReduced();
+  const coarse = isCoarsePointer();
 
   let width = 0;
   let height = 0;
@@ -85,7 +134,7 @@ export function createRankFx(slide, watermark, slideIndex) {
       height = slide.clientHeight;
       if (!width || !height) return;
 
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, coarse ? 1.5 : 2);
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
       canvas.style.width = `${width}px`;
@@ -194,47 +243,18 @@ export function createRankFx(slide, watermark, slideIndex) {
     if (!width || !height || !rankWidth || !rankHeight) return;
 
     const style = getComputedStyle(watermark);
-    const fontSize = Number.parseFloat(style.fontSize);
-    const sampleCanvas = document.createElement('canvas');
-    const sampleContext = sampleCanvas.getContext('2d', { willReadFrequently: true });
-    sampleContext.font = `${style.fontWeight} ${fontSize}px ${style.fontFamily}`;
     const rank = watermark.dataset.rank ?? watermark.textContent;
-    const metrics = sampleContext.measureText(rank);
-    const glyphWidth = Math.ceil(metrics.actualBoundingBoxLeft + metrics.actualBoundingBoxRight);
-    const glyphHeight = Math.ceil(metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent);
-    const padding = 4;
-
-    sampleCanvas.width = glyphWidth + padding * 2;
-    sampleCanvas.height = glyphHeight + padding * 2;
-    sampleContext.font = `${style.fontWeight} ${fontSize}px ${style.fontFamily}`;
-    sampleContext.fillStyle = '#fff';
-    sampleContext.textBaseline = 'alphabetic';
-    sampleContext.fillText(
-      rank,
-      padding + metrics.actualBoundingBoxLeft,
-      padding + metrics.actualBoundingBoxAscent
-    );
-
-    const { data } = sampleContext.getImageData(0, 0, sampleCanvas.width, sampleCanvas.height);
-    const area = sampleCanvas.width * sampleCanvas.height;
-    const stride = Math.max(6, Math.round(Math.sqrt(area / MAX_PARTICLES) * 0.72));
-    const points = [];
-
-    for (let y = 0; y < sampleCanvas.height; y += stride) {
-      for (let x = 0; x < sampleCanvas.width; x += stride) {
-        if (data[(y * sampleCanvas.width + x) * 4 + 3] > 40) points.push({ x, y });
-      }
-    }
-
+    const { points, width: sampleWidth, height: sampleHeight } = sampleGlyphPoints(rank, style);
+    const cap = maxParticles();
     const random = seededRandom(slideIndex * 7919 + 17);
-    points.sort(() => random() - 0.5);
+    const shuffled = points.slice().sort(() => random() - 0.5);
     const centerX = watermark.offsetLeft + rankWidth / 2;
     const centerY = height / 2;
 
-    particles = points.slice(0, MAX_PARTICLES).map((point) => {
+    particles = shuffled.slice(0, cap).map((point) => {
       const target = {
-        x: centerX + point.x - sampleCanvas.width / 2,
-        y: centerY + point.y - sampleCanvas.height / 2,
+        x: centerX + point.x - sampleWidth / 2,
+        y: centerY + point.y - sampleHeight / 2,
       };
       const lateral = (random() - 0.5) * 150;
       const entryDistance = 40 + random() * 120;

@@ -8,8 +8,7 @@ gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 // ScrollTrigger refresh mid-scroll causes visible jumps. Skip those.
 ScrollTrigger.config({ ignoreMobileResize: true });
 
-const CLOSED = 'inset(100% 0% 0% 0%)';
-const OPEN = 'inset(0% 0% 0% 0%)';
+const PROGRESS_EPSILON = 0.001;
 
 /**
  * Pins the stage and scrubs one master timeline: each slide wipes up
@@ -20,8 +19,28 @@ const OPEN = 'inset(0% 0% 0% 0%)';
 export function initStageScroll(stage, slides, { onProgress, onActive }) {
   const steps = slides.length - 1;
   const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+  const mobileTransition =
+    window.matchMedia?.('(max-width: 960px), (pointer: coarse)').matches ?? false;
   let active = -1;
   let wipingSegment = -1;
+  let lastDispatchedProgress = -1;
+  let progressFrame = 0;
+  let pendingProgress = 0;
+
+  function dispatchProgress(progress) {
+    if (Math.abs(progress - lastDispatchedProgress) < PROGRESS_EPSILON) return;
+    lastDispatchedProgress = progress;
+    onProgress?.(progress);
+  }
+
+  function scheduleProgress(progress) {
+    pendingProgress = progress;
+    if (progressFrame) return;
+    progressFrame = requestAnimationFrame(() => {
+      progressFrame = 0;
+      dispatchProgress(pendingProgress);
+    });
+  }
 
   // Compositor promotion is expensive; only the pair of slides actually
   // being wiped between needs it, not all twelve slides at once.
@@ -34,25 +53,36 @@ export function initStageScroll(stage, slides, { onProgress, onActive }) {
     wipingSegment = seg;
     slides[seg].classList.add('is-wiping');
     slides[seg + 1].classList.add('is-wiping');
+    updateSlideVisibility(seg);
+  }
+
+  function updateSlideVisibility(seg) {
+    slides.forEach((slide, i) => {
+      slide.style.visibility = i === seg || i === seg + 1 ? 'visible' : 'hidden';
+    });
   }
 
   slides.forEach((slide, i) => {
     slide.style.zIndex = i + 1;
-    if (i > 0) gsap.set(slide, { clipPath: CLOSED });
+    if (i > 0) gsap.set(slide, { y: '100%' });
   });
 
   const tl = gsap.timeline({ paused: false });
   slides.forEach((slide, i) => {
     if (i === 0) return;
     const prev = slides[i - 1];
-    tl.fromTo(slide, { clipPath: CLOSED }, { clipPath: OPEN, duration: 1, ease: 'none' }, i - 1)
-      .fromTo(prev, { scale: 1 }, { scale: 1.07, duration: 1, ease: 'none' }, i - 1)
-      .fromTo(
-        prev.querySelector('.slide-dim'),
-        { opacity: 0 },
-        { opacity: 0.65, duration: 1, ease: 'none' },
-        i - 1
-      );
+    tl.fromTo(slide, { y: '100%' }, { y: '0%', duration: 1, ease: 'none' }, i - 1);
+
+    if (!mobileTransition) {
+      tl.fromTo(prev, { scale: 1 }, { scale: 1.07, duration: 1, ease: 'none' }, i - 1);
+    }
+
+    tl.fromTo(
+      prev.querySelector('.slide-dim'),
+      { opacity: 0 },
+      { opacity: 0.65, duration: 1, ease: 'none' },
+      i - 1
+    );
 
     if (!reduced) {
       const inner = slide.querySelector('.slide-inner');
@@ -75,7 +105,7 @@ export function initStageScroll(stage, slides, { onProgress, onActive }) {
       inertia: false,
     },
     onUpdate(self) {
-      onProgress?.(self.progress);
+      scheduleProgress(self.progress);
       setWipingSegment(Math.min(Math.floor(self.progress * steps), steps - 1));
       const next = Math.round(self.progress * steps);
       if (next !== active) {
@@ -87,7 +117,7 @@ export function initStageScroll(stage, slides, { onProgress, onActive }) {
 
   // Fire the initial state (hero active) once layout has settled.
   requestAnimationFrame(() => {
-    onProgress?.(trigger.progress);
+    dispatchProgress(trigger.progress);
     setWipingSegment(Math.min(Math.floor(trigger.progress * steps), steps - 1));
     onActive?.(Math.round(trigger.progress * steps));
     active = Math.round(trigger.progress * steps);

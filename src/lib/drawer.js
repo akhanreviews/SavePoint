@@ -8,9 +8,9 @@ function ensureModelViewer() {
 }
 
 /**
- * Single shared right-edge overlay drawer for the 3D model panes. Panes are
- * created lazily (first open per game) and cached so re-opening is instant;
- * the page behind never shifts — the drawer sits on top as a fixed panel.
+ * Single shared right-edge overlay drawer for the 3D model panes. Only the
+ * currently open pane is kept in the DOM so Three.js resources are released
+ * when the drawer closes or the user switches games.
  */
 export function createDrawer() {
   const overlay = document.createElement('div');
@@ -39,9 +39,16 @@ export function createDrawer() {
   overlay.append(panel);
   document.body.appendChild(overlay);
 
-  const panes = new Map();
+  let currentPane = null;
   let currentTrigger = null;
   let isOpen = false;
+
+  function disposePane() {
+    if (!currentPane) return;
+    currentPane.deactivate();
+    currentPane.el.remove();
+    currentPane = null;
+  }
 
   function close() {
     if (!isOpen) return;
@@ -51,6 +58,7 @@ export function createDrawer() {
     currentTrigger?.setAttribute('aria-expanded', 'false');
     currentTrigger?.focus();
     currentTrigger = null;
+    disposePane();
   }
 
   function openFor(game, triggerBtn) {
@@ -62,16 +70,10 @@ export function createDrawer() {
     panel.style.setProperty('--text', game.theme.text);
     title.textContent = `${game.title} — 3D model`;
 
-    let pane = panes.get(game.slug);
-    if (!pane) {
-      pane = createModelPane(game);
-      panes.set(game.slug, pane);
-      body.appendChild(pane.el);
-    }
-    body.querySelectorAll(':scope > *').forEach((child) => {
-      child.style.display = child === pane.el ? '' : 'none';
-    });
-    pane.activate();
+    disposePane();
+    currentPane = createModelPane(game);
+    body.appendChild(currentPane.el);
+    currentPane.activate();
 
     isOpen = true;
     currentTrigger = triggerBtn;

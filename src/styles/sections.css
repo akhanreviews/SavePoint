@@ -19,7 +19,7 @@
    this on all slides permanently exhausts compositor memory late in the
    timeline and causes flicker on the final wipe. */
 .slide.is-wiping {
-  will-change: clip-path, transform;
+  will-change: transform;
 }
 
 .scroll-runway {
@@ -153,6 +153,14 @@
 }
 
 /* Full-bleed looping background video, mirroring the hero's video + scrim */
+.slide-video-placeholder {
+  position: absolute;
+  inset: 0;
+  background-color: var(--bg);
+  background-size: cover;
+  background-position: center;
+}
+
 .slide-video {
   position: absolute;
   inset: 0;
@@ -992,6 +1000,10 @@
 
   .watermark {
     font-size: 30vh;
+  }
+
+  .watermark.is-lit {
+    filter: none;
   }
 
   .sound-toggle {

@@ -41,10 +41,17 @@ export function createModelPane(game) {
   });
 
   let requested = false;
+  let loaded = false;
 
   return {
     el: col,
     async activate() {
+      viewer.setAttribute('auto-rotate', '');
+      if (loaded) {
+        viewer.style.display = '';
+        empty.style.display = 'none';
+        return;
+      }
       if (requested) return;
       requested = true;
       try {
@@ -52,12 +59,23 @@ export function createModelPane(game) {
         const type = res.headers.get('content-type') ?? '';
         if (res.ok && !type.includes('text/html')) {
           viewer.src = game.model;
+          loaded = true;
           viewer.style.display = '';
           empty.style.display = 'none';
         }
       } catch {
         /* keep the empty state */
       }
+    },
+    deactivate() {
+      viewer.removeAttribute('auto-rotate');
+      if (loaded) {
+        viewer.removeAttribute('src');
+        loaded = false;
+      }
+      requested = false;
+      viewer.style.display = 'none';
+      empty.style.display = '';
     },
   };
 }

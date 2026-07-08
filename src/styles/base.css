@@ -66,6 +66,16 @@ dt {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+
+  .grain {
+    animation: none;
+  }
+}
+
+@media (max-width: 960px), (pointer: coarse) {
+  .grain {
+    animation: none;
+  }
 }
 
 /* ── Film grain + vignette ──────────────────────────────────────── */

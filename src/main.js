@@ -33,58 +33,76 @@ const applyTheme = (node, theme) => {
 const prefersReducedMotion = () =>
   window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
-const skipVideoBg = prefersReducedMotion() || Boolean(navigator.connection?.saveData);
+const isMobileViewport = () => window.matchMedia?.('(max-width: 960px)').matches ?? false;
+const isLowMemoryDevice = () =>
+  navigator.deviceMemory != null && navigator.deviceMemory <= 4;
+
+const skipVideoBg =
+  prefersReducedMotion() ||
+  Boolean(navigator.connection?.saveData) ||
+  isMobileViewport() ||
+  isLowMemoryDevice();
+
+/** On mobile / low-memory devices only the active slide gets a video element. */
+const narrowVideoWindow = isMobileViewport() || isLowMemoryDevice();
+
+const BG_ACTIVATE_DELAY = 200;
+let bgActivateTimer = 0;
 
 /**
- * Full-bleed looping background video for a game slide. Lazy: the
- * activate/preload/deactivate trio (wired from onActive below) means only
- * the active slide and its immediate neighbors ever touch the network.
+ * Full-bleed looping background video for a game slide. The <video> element
+ * is created on activate/preload and removed from the DOM on deactivate so
+ * decoders aren't reserved for all ten slides at once.
  */
 function buildBackgroundVideo(src) {
-  if (!src || skipVideoBg) return { el: null, activate() {}, preload() {}, deactivate() {} };
+  if (!src || skipVideoBg) return { placeholder: null, activate() {}, preload() {}, deactivate() {} };
 
-  const video = document.createElement('video');
-  video.className = 'slide-video';
-  video.muted = true;
-  video.loop = true;
-  video.playsInline = true;
-  video.preload = 'none';
-  video.setAttribute('aria-hidden', 'true');
+  const placeholder = document.createElement('div');
+  placeholder.className = 'slide-video-placeholder';
 
-  let attached = false;
-  const attach = (preload = 'auto') => {
+  let video = null;
+
+  const mount = (preload = 'auto') => {
+    if (video) {
+      video.preload = preload;
+      return;
+    }
+    video = document.createElement('video');
+    video.className = 'slide-video';
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.disableRemotePlayback = true;
     video.preload = preload;
-    if (attached) return;
-    attached = true;
+    video.setAttribute('playsinline', '');
+    video.setAttribute('webkit-playsinline', '');
+    video.setAttribute('aria-hidden', 'true');
     video.src = src;
+    placeholder.appendChild(video);
     video.load();
   };
 
-  const unload = () => {
-    if (!attached) return;
+  const unmount = () => {
+    if (!video) return;
     video.pause();
     video.removeAttribute('src');
     video.load();
-    video.preload = 'none';
-    attached = false;
+    video.remove();
+    video = null;
   };
 
   return {
-    el: video,
+    placeholder,
     activate() {
-      attach('auto');
+      mount('auto');
       video.play().catch(() => {});
     },
     preload() {
-      if (!attached) {
-        attach('metadata');
-      } else {
-        video.preload = 'metadata';
-      }
+      mount('metadata');
       video.pause();
     },
     deactivate() {
-      unload();
+      unmount();
     },
   };
 }
@@ -264,7 +282,7 @@ function buildGameSlide(game, gameIndex) {
   inner.append(head, body);
   const soundButton = buildSoundButton(game);
 
-  if (bg.el) slide.append(bg.el, el('div', 'slide-scrim'));
+  if (bg.placeholder) slide.append(bg.placeholder, el('div', 'slide-scrim'));
   slide.append(watermark, rankFx.el, inner, soundButton, el('div', 'slide-dim'));
 
   slide.querySelectorAll('.reveal').forEach((node, i) => {
@@ -383,19 +401,28 @@ scrollCtrl = initStageScroll(
           ctrl.trailer?.activate();
           ctrl.rank?.play();
           ctrl.dust?.activate();
-          ctrl.bg?.activate();
-        } else if (i === index - 1 || i === index + 1) {
-          ctrl.trailer?.deactivate();
-          ctrl.rank?.reset();
-          ctrl.dust?.deactivate();
-          ctrl.bg?.preload();
         } else {
           ctrl.trailer?.deactivate();
           ctrl.rank?.reset();
           ctrl.dust?.deactivate();
+        }
+      });
+
+      clearTimeout(bgActivateTimer);
+      slideCtrls.forEach((ctrl, i) => {
+        const isNeighbor = i === index - 1 || i === index + 1;
+        if (i !== index && !(isNeighbor && !narrowVideoWindow)) {
           ctrl.bg?.deactivate();
         }
       });
+      if (!narrowVideoWindow) {
+        [index - 1, index + 1].forEach((i) => {
+          if (i >= 0 && i < slideCtrls.length) slideCtrls[i]?.bg?.preload();
+        });
+      }
+      bgActivateTimer = window.setTimeout(() => {
+        if (currentIndex === index) slideCtrls[index]?.bg?.activate();
+      }, BG_ACTIVATE_DELAY);
     },
   }
 );

@@ -21,6 +21,20 @@ export function initStageScroll(stage, slides, { onProgress, onActive }) {
   const steps = slides.length - 1;
   const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
   let active = -1;
+  let wipingSegment = -1;
+
+  // Compositor promotion is expensive; only the pair of slides actually
+  // being wiped between needs it, not all twelve slides at once.
+  function setWipingSegment(seg) {
+    if (seg === wipingSegment) return;
+    if (wipingSegment >= 0) {
+      slides[wipingSegment].classList.remove('is-wiping');
+      slides[wipingSegment + 1].classList.remove('is-wiping');
+    }
+    wipingSegment = seg;
+    slides[seg].classList.add('is-wiping');
+    slides[seg + 1].classList.add('is-wiping');
+  }
 
   slides.forEach((slide, i) => {
     slide.style.zIndex = i + 1;
@@ -66,6 +80,7 @@ export function initStageScroll(stage, slides, { onProgress, onActive }) {
     },
     onUpdate(self) {
       onProgress?.(self.progress);
+      setWipingSegment(Math.min(Math.floor(self.progress * steps), steps - 1));
       const next = Math.round(self.progress * steps);
       if (next !== active) {
         active = next;
@@ -77,6 +92,7 @@ export function initStageScroll(stage, slides, { onProgress, onActive }) {
   // Fire the initial state (hero active) once layout has settled.
   requestAnimationFrame(() => {
     onProgress?.(trigger.progress);
+    setWipingSegment(Math.min(Math.floor(trigger.progress * steps), steps - 1));
     onActive?.(Math.round(trigger.progress * steps));
     active = Math.round(trigger.progress * steps);
   });

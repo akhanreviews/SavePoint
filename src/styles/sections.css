@@ -13,7 +13,17 @@
   background: var(--bg);
   color: var(--text);
   overflow: hidden;
+}
+
+/* Applied only to the actively-wiping pair (see transitions.js) — keeping
+   this on all slides permanently exhausts compositor memory late in the
+   timeline and causes flicker on the final wipe. */
+.slide.is-wiping {
   will-change: clip-path, transform;
+}
+
+.scroll-runway {
+  height: 25vh;
 }
 
 /* Black veil the master timeline fades in over the outgoing slide */
@@ -492,8 +502,14 @@
   background: var(--primary);
   transform: rotate(45deg);
   box-shadow: 0 0 22px 2px color-mix(in srgb, var(--primary) 45%, transparent);
-  animation: outro-pulse 2.2s ease-in-out infinite;
   margin-bottom: 0.6rem;
+}
+
+/* Only animate once the outro is the active slide — an off-screen slide
+   still paints its animated layers otherwise, adding jank near the end
+   of the scroll timeline. */
+.slide.is-active .outro-glyph {
+  animation: outro-pulse 2.2s ease-in-out infinite;
 }
 
 @keyframes outro-pulse {
@@ -537,6 +553,9 @@
 .credits-track {
   display: flex;
   flex-direction: column;
+}
+
+.slide.is-active .credits-track {
   animation: credits-scroll 30s linear infinite;
 }
 

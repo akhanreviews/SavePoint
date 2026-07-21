@@ -468,4 +468,14 @@ document.addEventListener(
 const boot = initBoot({ heroVideo: slideCtrls[0].video, logoUrls: games.map((g) => g.logo) });
 boot.finish();
 
+// The countdown is a deliberately isolated district of the new world. Keep
+// this control in the legacy entry so returning to the island also releases
+// every soundtrack, trailer, and model decoder before the Pixi scene mounts.
+const returnToIsland = document.createElement('a');
+returnToIsland.className = 'return-to-island';
+returnToIsland.href = '../';
+returnToIsland.textContent = '← Return to island';
+returnToIsland.setAttribute('aria-label', 'Return to SavePoint island');
+document.body.appendChild(returnToIsland);
+
 initCursor();

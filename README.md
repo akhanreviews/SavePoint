@@ -1,10 +1,13 @@
 # SavePoint
 
-A one-page, scroll-driven countdown of my top 10 games. Hero video intro, then
-ten full-screen sections wiping from **Nº 10 (God of War)** down to
-**Nº 1 (Red Dead Redemption 2)**, each themed in its game's colors, with a
-Steam trailer, favorite character & mission, a one-line review, and a
-mouse-draggable auto-rotating 3D character.
+SavePoint is an interactive game-world archive. The root experience is a
+real-time 3D resort island with a cinematic cloud reveal, adaptive quality
+tiers, and Arthur Morgan rendered as a pixel billboard character. The original
+cinematic countdown remains intact as the Hall of Fame at `/top-10/`.
+
+The first world slice includes the island reveal, Arthur selection, walk/click
+movement, and an interactive Hall of Fame entrance. The Hall confirmation
+transitions into the preserved Top 10 experience.
 
 ## Run it
 
@@ -12,6 +15,7 @@ mouse-draggable auto-rotating 3D character.
 npm install
 npm run dev       # local dev server
 npm run build     # production build → dist/
+npm test          # legacy audio lifecycle + world unit tests
 npm run trailers  # refresh Steam trailer URLs + logos (re-run if streams go stale)
 ```
 
@@ -33,7 +37,15 @@ APP_PORT=8080
 TAILSCALE_BIND=100.x.y.z
 ```
 
-## Swap in your own content
+## World content
+
+The procedural island and Hall graybox live in `src/three/IslandScene.tsx`.
+The supplied Arthur sheet is normalized into
+`public/assets/characters/arthur/arthur-walk-atlas.png`; it is rendered with
+nearest-neighbor sampling inside the 3D scene. World state is stored in the
+versioned `savepoint:world:v2` local-storage record.
+
+## Swap in your own Top 10 content
 
 Everything lives in **`src/data/games.js`** — one entry per game.
 

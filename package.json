@@ -1,22 +1,37 @@
 {
   "name": "savepoint",
   "version": "1.0.0",
-  "description": "A one-page countdown of my top 10 games",
+  "description": "SavePoint — an interactive game-world archive",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "test": "node scripts/test-audio-director.mjs",
+    "test": "npm run test:legacy && vitest run",
+    "test:legacy": "node scripts/test-audio-director.mjs",
     "preview": "vite preview",
     "trailers": "node scripts/fetch-steam-trailers.mjs"
   },
   "license": "ISC",
   "dependencies": {
     "@google/model-viewer": "^4.3.1",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
     "gsap": "^3.15.0",
-    "hls.js": "^1.6.16"
+    "hls.js": "^1.6.16",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-router-dom": "^7.18.1",
+    "three": "^0.183.2",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "vite": "^8.1.3"
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.185.1",
+    "@vitejs/plugin-react": "^6.0.3",
+    "jsdom": "^29.1.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.3",
+    "vitest": "^4.1.10"
   }
 }

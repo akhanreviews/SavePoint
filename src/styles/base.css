@@ -21,6 +21,31 @@ body {
   overscroll-behavior-y: none;
 }
 
+.return-to-island {
+  position: fixed;
+  top: 2.2vh;
+  right: 3vw;
+  z-index: 320;
+  pointer-events: auto;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid rgba(232, 196, 100, 0.48);
+  background: rgba(10, 10, 12, 0.72);
+  color: var(--gold-hot, #ffe9a3);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.return-to-island:hover,
+.return-to-island:focus-visible {
+  background: #e8c464;
+  border-color: #e8c464;
+  color: #0a0a0c;
+  outline: none;
+}
+
 body {
   background: var(--ink);
   color: #eee;
